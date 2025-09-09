@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI vs JEE: Interactive Research Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Brilliant Blues -->
+    <!-- Application Structure Plan: The application is structured as an interactive dashboard with four distinct, navigable sections: Overview, Methodology, Performance Analysis, and Error Insights. This tab-based structure was chosen over a linear scroll to empower users to directly access the information most relevant to them, promoting non-linear exploration. The 'Performance Analysis' section is the interactive core, featuring filters that allow users to dynamically query the mock dataset. This design transforms the static research proposal into an engaging tool for understanding the study's scope and potential outcomes, prioritizing user-driven discovery over passive reading. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: JEE Exam Subjects (Physics, Chemistry, Math). Goal: Inform. Viz/Method: HTML/CSS cards. Interaction: None. Justification: Provides a clear, visually segmented introduction to the exam's core components. Library: Tailwind CSS.
+        - Report Info: 4-Step Research Methodology. Goal: Organize. Viz/Method: HTML/CSS horizontal process flow diagram. Interaction: Hover effects. Justification: Visually communicates the research sequence more effectively than a static list. Library: Tailwind CSS.
+        - Report Info: Projected performance by Subject, Year, and Exam Type. Goal: Compare/Relationships. Viz/Method: Interactive Bar Chart. Interaction: User-controlled filters (Year, Exam Type) update chart data. Justification: Allows for dynamic comparison and exploration of the core quantitative hypothesis. Library: Chart.js (Canvas).
+        - Report Info: Projected performance by Question Type. Goal: Compare. Viz/Method: Interactive Radar Chart. Interaction: Updates based on the main filters. Justification: Provides a multi-axial view of AI strengths and weaknesses against different problem formats. Library: Chart.js (Canvas).
+        - Report Info: Hypothesized Error Distribution. Goal: Inform/Compare. Viz/Method: Donut Chart. Interaction: None. Justification: Offers a quick, proportional view of the qualitative error analysis. Library: Chart.js (Canvas).
+        - Report Info: Error Type Examples. Goal: Organize/Inform. Viz/Method: Interactive accordion/show-hide panels. Interaction: Clicking a category reveals a sample problem. Justification: Makes abstract error categories concrete and understandable. Library: Vanilla JS.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f0f4f8; }
+        .chart-container { position: relative; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto; height: 350px; max-height: 400px; }
+        .nav-btn { transition: all 0.3s ease; }
+        .nav-btn.active { background-color: #003B73; color: white; }
+        .nav-btn:not(.active):hover { background-color: #dbeafe; }
+        .filter-btn { transition: all 0.3s ease; }
+        .filter-btn.active { background-color: #0074D9; color: white; border-color: #0074D9; }
+        .filter-btn:not(.active):hover { background-color: #eff6ff; }
+        section { display: none; }
+        section.active { display: block; }
+        .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.5s ease-out; }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <header class="bg-white shadow-md p-6">
+        <div class="container mx-auto text-center">
+            <h1 class="text-3xl md:text-5xl font-black text-[#003B73]">AI vs. JEE</h1>
+            <p class="text-lg md:text-xl text-[#0074D9] mt-2 font-semibold">An Interactive Dashboard for Evaluating Gemini 2.5 Pro</p>
+        </div>
+    </header>
+
+    <nav class="sticky top-0 bg-white/80 backdrop-blur-sm z-10 shadow-sm">
+        <div class="container mx-auto flex justify-center p-2 space-x-2 md:space-x-4">
+            <button data-target="overview" class="nav-btn active text-sm md:text-base font-semibold py-2 px-4 rounded-full">Overview</button>
+            <button data-target="methodology" class="nav-btn text-sm md:text-base font-semibold py-2 px-4 rounded-full">Methodology</button>
+            <button data-target="performance" class="nav-btn text-sm md:text-base font-semibold py-2 px-4 rounded-full">Performance Analysis</button>
+            <button data-target="errors" class="nav-btn text-sm md:text-base font-semibold py-2 px-4 rounded-full">Error Insights</button>
+        </div>
+    </nav>
+
+    <main class="container mx-auto p-4 md:p-8">
+        
+        <section id="overview" class="active">
+            <div class="bg-white rounded-lg shadow-lg p-6 md:p-8 text-center">
+                <h2 class="text-2xl md:text-3xl font-bold text-[#003B73] mb-4">The Ultimate Academic Gauntlet</h2>
+                <p class="text-base md:text-lg text-gray-700 max-w-4xl mx-auto mb-8">
+                    The Joint Entrance Examination (JEE) is the gateway to India's prestigious engineering institutes (IITs). It's renowned for its difficulty, testing not just knowledge but deep conceptual understanding, problem-solving speed, and analytical reasoning across three core subjects. This study evaluates how a leading AI, Gemini 2.5 Pro, measures up.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+                    <div class="border-4 border-[#FF4136] rounded-lg p-6">
+                        <h3 class="text-4xl font-black text-[#FF4136]">P</h3>
+                        <p class="text-xl font-bold text-[#003B73] mt-2">Physics</p>
+                        <p class="text-gray-600 mt-2">Tests the application of complex theories to real-world problems, from mechanics to electromagnetism.</p>
+                    </div>
+                    <div class="border-4 border-[#2ECC40] rounded-lg p-6">
+                        <h3 class="text-4xl font-black text-[#2ECC40]">C</h3>
+                        <p class="text-xl font-bold text-[#003B73] mt-2">Chemistry</p>
+                        <p class="text-gray-600 mt-2">Covers a vast syllabus across physical, organic, and inorganic chemistry, demanding both memorization and logic.</p>
+                    </div>
+                    <div class="border-4 border-[#0074D9] rounded-lg p-6">
+                        <h3 class="text-4xl font-black text-[#0074D9]">M</h3>
+                        <p class="text-xl font-bold text-[#003B73] mt-2">Mathematics</p>
+                        <p class="text-gray-600 mt-2">Focuses on intricate problem-solving, requiring creativity and precision in topics like calculus and algebra.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="methodology">
+            <div class="bg-white rounded-lg shadow-lg p-6 md:p-8">
+                <h2 class="text-2xl md:text-3xl font-bold text-[#003B73] text-center mb-8">A Rigorous Four-Step Evaluation Process</h2>
+                <div class="flex flex-col md:flex-row justify-between items-center space-y-8 md:space-y-0 md:space-x-4">
+                    <div class="text-center w-full md:w-1/4">
+                        <div class="bg-[#0074D9] text-white rounded-full w-20 h-20 flex items-center justify-center text-4xl font-bold mx-auto mb-4 border-4 border-white shadow-lg">1</div>
+                        <h3 class="text-xl font-semibold text-[#003B73]">Data Collection</h3>
+                        <p class="text-gray-600 mt-2">Gather official JEE Main & Advanced question papers from 2023 to 2025 to create a comprehensive dataset.</p>
+                    </div>
+                    <div class="text-gray-300 text-2xl hidden md:block">&rarr;</div>
+                    <div class="text-center w-full md:w-1/4">
+                        <div class="bg-[#FF851B] text-white rounded-full w-20 h-20 flex items-center justify-center text-4xl font-bold mx-auto mb-4 border-4 border-white shadow-lg">2</div>
+                        <h3 class="text-xl font-semibold text-[#003B73]">AI Evaluation</h3>
+                        <p class="text-gray-600 mt-2">Submit each question to Gemini 2.5 Pro via its API using a zero-shot prompting strategy to ensure unbiased responses.</p>
+                    </div>
+                    <div class="text-gray-300 text-2xl hidden md:block">&rarr;</div>
+                    <div class="text-center w-full md:w-1/4">
+                        <div class="bg-[#2ECC40] text-white rounded-full w-20 h-20 flex items-center justify-center text-4xl font-bold mx-auto mb-4 border-4 border-white shadow-lg">3</div>
+                        <h3 class="text-xl font-semibold text-[#003B73]">Scoring & Grading</h3>
+                        <p class="text-gray-600 mt-2">Programmatically score the AI's answers using the official NTA marking scheme (+4 for correct, -1 for incorrect).</p>
+                    </div>
+                     <div class="text-gray-300 text-2xl hidden md:block">&rarr;</div>
+                    <div class="text-center w-full md:w-1/4">
+                        <div class="bg-[#FF4136] text-white rounded-full w-20 h-20 flex items-center justify-center text-4xl font-bold mx-auto mb-4 border-4 border-white shadow-lg">4</div>
+                        <h3 class="text-xl font-semibold text-[#003B73]">Analysis</h3>
+                        <p class="text-gray-600 mt-2">Conduct in-depth quantitative and qualitative analysis to identify strengths, weaknesses, and common error patterns.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="performance">
+            <div class="bg-white rounded-lg shadow-lg p-6 md:p-8">
+                <h2 class="text-2xl md:text-3xl font-bold text-[#003B73] text-center mb-2">Interactive Performance Analysis</h2>
+                 <p class="text-center text-gray-600 mb-6">Use the filters below to explore Gemini 2.5 Pro's projected performance across different years and exam types.</p>
+                <div class="flex flex-col md:flex-row justify-center items-center space-y-4 md:space-y-0 md:space-x-8 mb-8">
+                    <div id="year-filter-group">
+                        <span class="font-semibold mr-2">Year:</span>
+                        <button class="filter-btn active border-2 border-gray-300 rounded-md py-1 px-3" data-filter="year" data-value="2025">2025</button>
+                        <button class="filter-btn border-2 border-gray-300 rounded-md py-1 px-3" data-filter="year" data-value="2024">2024</button>
+                        <button class="filter-btn border-2 border-gray-300 rounded-md py-1 px-3" data-filter="year" data-value="2023">2023</button>
+                    </div>
+                    <div id="exam-filter-group">
+                        <span class="font-semibold mr-2">Exam:</span>
+                        <button class="filter-btn active border-2 border-gray-300 rounded-md py-1 px-3" data-filter="exam" data-value="Main">Main</button>
+                        <button class="filter-btn border-2 border-gray-300 rounded-md py-1 px-3" data-filter="exam" data-value="Advanced">Advanced</button>
+                    </div>
+                </div>
+
+                <div id="dynamic-summary" class="text-center bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-4 mb-8 max-w-3xl mx-auto">
+                    Summary text will appear here.
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-xl font-bold text-[#003B73] text-center mb-4">Performance by Subject</h3>
+                        <div class="chart-container">
+                            <canvas id="subjectPerformanceChart"></canvas>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-[#003B73] text-center mb-4">Performance by Question Type</h3>
+                        <div class="chart-container">
+                            <canvas id="questionTypeChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="errors">
+            <div class="bg-white rounded-lg shadow-lg p-6 md:p-8">
+                <h2 class="text-2xl md:text-3xl font-bold text-[#003B73] text-center mb-8">A Closer Look at AI's Mistakes</h2>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                    <div>
+                        <h3 class="text-xl font-bold text-[#003B73] text-center mb-4">Hypothesized Error Distribution</h3>
+                        <p class="text-center text-gray-600 mb-4">We anticipate that errors in complex, multi-step reasoning will be the most common failure point for the AI, rather than simple factual recall.</p>
+                        <div class="chart-container h-[300px] md:h-[350px]">
+                            <canvas id="errorAnalysisChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                         <h3 class="text-xl font-bold text-[#003B73] text-center mb-4">Sample Error Analysis</h3>
+                         <p class="text-center text-gray-600 mb-4">Click on an error type to see a representative example of a question where the AI might falter.</p>
+                        <div class="accordion-item border rounded-lg overflow-hidden">
+                            <button class="accordion-header w-full text-left p-4 bg-gray-50 hover:bg-gray-100 font-semibold flex justify-between items-center">
+                                Multi-Step Reasoning Error
+                                <span class="text-xl font-light">+</span>
+                            </button>
+                            <div class="accordion-content bg-white p-4 border-t">
+                                <p class="font-semibold text-gray-800">Example (Physics):</p>
+                                <p class="text-sm text-gray-600 mb-2">"A solid sphere rolls without slipping down an incline of 30°. Find its acceleration."</p>
+                                <p class="font-semibold text-red-600">Potential AI Flaw:</p>
+                                <p class="text-sm text-gray-600">The AI might correctly identify the formulas for linear and rotational motion but fail to correctly synthesize them by linking linear acceleration (a) and angular acceleration (α) through the no-slip condition (a = αR), leading to an incorrect final answer.</p>
+                            </div>
+                        </div>
+                        <div class="accordion-item border rounded-lg overflow-hidden">
+                            <button class="accordion-header w-full text-left p-4 bg-gray-50 hover:bg-gray-100 font-semibold flex justify-between items-center">
+                                Calculation Error
+                                <span class="text-xl font-light">+</span>
+                            </button>
+                             <div class="accordion-content bg-white p-4 border-t">
+                                <p class="font-semibold text-gray-800">Example (Chemistry):</p>
+                                <p class="text-sm text-gray-600 mb-2">"Calculate the pH of a 0.05 M solution of H₂SO₄."</p>
+                                <p class="font-semibold text-red-600">Potential AI Flaw:</p>
+                                <p class="text-sm text-gray-600">The AI might correctly recognize that H₂SO₄ is a strong acid but treat it as monoprotic, calculating pH based only on the initial H⁺ concentration and ignoring the second dissociation step, resulting in a simple but critical calculation mistake.</p>
+                            </div>
+                        </div>
+                         <div class="accordion-item border rounded-lg overflow-hidden">
+                            <button class="accordion-header w-full text-left p-4 bg-gray-50 hover:bg-gray-100 font-semibold flex justify-between items-center">
+                                Conceptual Misunderstanding
+                                <span class="text-xl font-light">+</span>
+                            </button>
+                             <div class="accordion-content bg-white p-4 border-t">
+                                <p class="font-semibold text-gray-800">Example (Math):</p>
+                                <p class="text-sm text-gray-600 mb-2">"Determine if the function f(x) = |x-2| is differentiable at x=2."</p>
+                                <p class="font-semibold text-red-600">Potential AI Flaw:</p>
+                                <p class="text-sm text-gray-600">While the AI knows the rules of differentiation, it might fail to grasp the geometric concept that a sharp corner (a 'cusp') in a graph means the derivative is undefined at that point. It might try to apply power rules incorrectly instead of checking the limit definition of a derivative from the left and right.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+    
+    <footer class="text-center mt-8 py-6 border-t border-gray-200">
+        <p class="text-gray-500">Interactive Research Proposal | Evaluating LLMs in Competitive STEM Education</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sections = document.querySelectorAll('main section');
+            const navButtons = document.querySelectorAll('.nav-btn');
+
+            navButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const targetId = button.dataset.target;
+
+                    sections.forEach(section => {
+                        section.classList.toggle('active', section.id === targetId);
+                    });
+
+                    navButtons.forEach(btn => {
+                        btn.classList.toggle('active', btn.dataset.target === targetId);
+                    });
+                });
+            });
+
+            const accordionHeaders = document.querySelectorAll('.accordion-header');
+            accordionHeaders.forEach(header => {
+                header.addEventListener('click', () => {
+                    const content = header.nextElementSibling;
+                    const item = header.parentElement;
+                    item.classList.toggle('open');
+                    
+                    if (content.style.maxHeight) {
+                        content.style.maxHeight = null;
+                        header.querySelector('span').textContent = '+';
+                    } else {
+                        document.querySelectorAll('.accordion-content').forEach(c => c.style.maxHeight = null);
+                        document.querySelectorAll('.accordion-header span').forEach(s => s.textContent = '+');
+                        content.style.maxHeight = content.scrollHeight + "px";
+                        header.querySelector('span').textContent = '−';
+                    }
+                });
+            });
+
+
+            const mockData = {
+                '2025': {
+                    'Main': { subject: [78, 90, 70], questionType: [88, 75, 65] },
+                    'Advanced': { subject: [68, 82, 60], questionType: [78, 65, 55] }
+                },
+                '2024': {
+                    'Main': { subject: [75, 88, 65], questionType: [85, 70, 60] },
+                    'Advanced': { subject: [65, 80, 55], questionType: [75, 60, 50] }
+                },
+                '2023': {
+                    'Main': { subject: [72, 85, 62], questionType: [82, 68, 58] },
+                    'Advanced': { subject: [62, 78, 52], questionType: [72, 58, 48] }
+                }
+            };
+            
+            let currentState = { year: '2025', exam: 'Main' };
+
+            const tooltipTitleCallback = {
+                plugins: { tooltip: { callbacks: {
+                    title: (tooltipItems) => {
+                        const item = tooltipItems[0];
+                        let label = item.chart.data.labels[item.dataIndex];
+                        return Array.isArray(label) ? label.join(' ') : label;
+                    }
+                }}}
+            };
+            
+            const subjectCtx = document.getElementById('subjectPerformanceChart').getContext('2d');
+            const subjectChart = new Chart(subjectCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Physics', 'Chemistry', 'Mathematics'],
+                    datasets: [{
+                        label: 'Accuracy (%)',
+                        data: [],
+                        backgroundColor: ['#0074D9', '#2ECC40', '#FF4136'],
+                        borderColor: ['#003B73', '#0074D9', '#FF4136'],
+                        borderWidth: 1
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 100 } }, ...tooltipTitleCallback }
+            });
+
+            const questionTypeCtx = document.getElementById('questionTypeChart').getContext('2d');
+            const questionTypeChart = new Chart(questionTypeCtx, {
+                type: 'radar',
+                data: {
+                    labels: ['Single Correct', 'Multiple Correct', 'Numerical Answer'],
+                    datasets: [{
+                        label: 'Accuracy (%)',
+                        data: [],
+                        fill: true,
+                        backgroundColor: 'rgba(255, 133, 27, 0.2)',
+                        borderColor: '#FF851B',
+                        pointBackgroundColor: '#FF851B'
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { r: { beginAtZero: true, max: 100, pointLabels: { font: { size: 12 } } } }, ...tooltipTitleCallback }
+            });
+            
+            const errorAnalysisCtx = document.getElementById('errorAnalysisChart').getContext('2d');
+            new Chart(errorAnalysisCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Conceptual', 'Calculation', 'Multi-Step Reasoning', 'Misinterpretation'],
+                    datasets: [{
+                        label: 'Error Distribution',
+                        data: [15, 30, 45, 10],
+                        backgroundColor: ['#0074D9', '#FF4136', '#FF851B', '#B10DC9'],
+                        hoverOffset: 4
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, ...tooltipTitleCallback, plugins: { ...tooltipTitleCallback.plugins, legend: { position: 'bottom' } } }
+            });
+            
+            function updateCharts() {
+                const data = mockData[currentState.year][currentState.exam];
+                subjectChart.data.datasets[0].data = data.subject;
+                subjectChart.update();
+
+                questionTypeChart.data.datasets[0].data = data.questionType;
+                questionTypeChart.update();
+                
+                const summaryDiv = document.getElementById('dynamic-summary');
+                summaryDiv.innerHTML = `Displaying projected results for the <strong>JEE ${currentState.exam} ${currentState.year}</strong> paper. The highest projected accuracy is in <strong>Chemistry</strong> (${data.subject[1]}%), while <strong>Mathematics</strong> (${data.subject[2]}%) presents the greatest challenge.`;
+            }
+
+            document.querySelectorAll('.filter-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const { filter, value } = e.target.dataset;
+                    currentState[filter] = value;
+                    
+                    document.querySelectorAll(`.filter-btn[data-filter="${filter}"]`).forEach(btn => {
+                         btn.classList.toggle('active', btn.dataset.value === value);
+                    });
+                    
+                    updateCharts();
+                });
+            });
+
+            updateCharts();
+        });
+    </script>
+</body>
+</html>
